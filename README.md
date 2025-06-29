@@ -1,0 +1,1 @@
+Template repo for the creation of Kirby Air Ride mods.
