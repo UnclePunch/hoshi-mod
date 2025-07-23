@@ -1,10 +1,15 @@
+ifeq ($(strip $(DEVKITPPC)),)
+$(error "Please set DEVKITPPC in your environment.")
+endif
+
 # === Tools ===
-CC = powerpc-eabi-gcc
-LD = powerpc-eabi-ld
+CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc
+LD = $(DEVKITPPC)/bin/powerpc-eabi-ld
+PYTHON 	:= python
 
 # === Paths ===
 HOSHIDIR  := externals/hoshi
-SRCDIR    := src
+SRCDIR    := examples/basics/src
 LIBDIR    := $(HOSHIDIR)/Lib
 BUILDDIR  := build
 BINDIR    := out
@@ -15,7 +20,7 @@ INCLUDES := -I$(HOSHIDIR)/include -I$(LIBDIR) -I$(SRCDIR)
 
 CFLAGS := -O1 -mcpu=750 -meabi -msdata=none -mhard-float -ffreestanding \
           -fno-unwind-tables -fno-exceptions -fno-asynchronous-unwind-tables \
-          -fno-merge-constants -ffunction-sections -fdata-sections \
+          -fno-merge-constants -ffunction-sections -fdata-sections -MMD -MP \
           $(INCLUDES)
 
 LDFLAGS := -r -T$(PACKDIR)/link.ld
@@ -26,10 +31,10 @@ LINKED_O   := $(BUILDDIR)/linked.o
 TARGET_BIN := $(BINDIR)/mod_template.bin
 
 # === Source Discovery ===
-SRC_C  := $(shell find $(SRCDIR) -type f -name '*.c')
-SRC_S  := $(shell find $(SRCDIR) -type f \( -name '*.s' -o -name '*.S' \))
-LIB_C  := $(shell find $(LIBDIR) -type f -name '*.c')
-LIB_S  := $(shell find $(LIBDIR) -type f \( -name '*.s' -o -name '*.S' \))
+SRC_C := $(wildcard $(SRCDIR)/**/*.c)
+LIB_C := $(wildcard $(LIBDIR)/**/*.c)
+SRC_S := $(wildcard $(SRCDIR)/**/*.[sS])
+LIB_S := $(wildcard $(LIBDIR)/**/*.[sS])
 
 ALL_C := $(SRC_C) $(LIB_C)
 ALL_S := $(SRC_S) $(LIB_S)
@@ -64,11 +69,13 @@ $(LINKED_O): $(OBJECTS)
 # === Pack Final Binary ===
 $(TARGET_BIN): $(LINKED_O)
 	@mkdir -p $(BINDIR)
-	python $(PACKDIR)/main.py $< -m $(MODTYPE) -o $@
+	$(PYTHON) $(PACKDIR)/main.py $< -m $(MODTYPE) -o $@
 
 # === Clean ===
 clean:
 	rm -rf $(BUILDDIR) $(BINDIR)
+
+-include $(OBJECTS:.o=.d)
 
 # === Debug Target (optional) ===
 print-debug:
