@@ -134,7 +134,7 @@ void On3DLoad()
 // Runs when pausing the match. The index of the pausing player is passed in as an argument.
 void On3DPause(int pause_ply)
 {
-    OSReport("Player [%d] has paused the game.\n", pause_ply);
+    OSReport("Player [%d] has paused the game.\n", pause_ply + 1);
 }
 
 // Runs when unpausing the match.
