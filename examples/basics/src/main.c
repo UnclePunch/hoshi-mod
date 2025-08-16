@@ -17,7 +17,7 @@ char ModAuthor[] = "Your Name"; // Creator of the mod.
 char ModVersion[] = "v1.0";     // Version of the mod.
 
 int ModSaveSize = sizeof(struct TemplateSave); // (optional) Size of the save data your mod uses. A pointer to the saved data is passed into OnSaveInit.
-TemplateSave *template_save_ptr;               // Pointer to the mod's save data. This must be updated manually in OnSaveInit by the mod author.
+TemplateSave *ModSave;                         // Pointer to the mod's save data. Updated by hoshi at runtime.
 
 // Creates a menu that appears in the in-game Settings menu.
 // Menus may be nested by setting the OptionDesc::kind to OPTKIND_MENU
@@ -27,8 +27,8 @@ OptionDesc ModSettings = {
     .kind = OPTKIND_MENU,
     .menu_ptr = &(MenuDesc){
         .option_num = 2,
-        .options = (OptionDesc[]){
-            {
+        .options = {
+            &(OptionDesc){
                 .name = "SFX Every Second",
                 .description = "Play a sfx every second, very annoying!",
                 .kind = OPTKIND_VALUE,
@@ -39,14 +39,14 @@ OptionDesc ModSettings = {
                     "On",
                 },
             },
-            {
+            &(OptionDesc){
                 .name = "Template Submenu",
                 .description = "More options in here.",
                 .kind = OPTKIND_MENU,
                 .menu_ptr = &(MenuDesc){
                     .option_num = 1,
-                    .options = (OptionDesc[]){
-                        {
+                    .options = {
+                        &(OptionDesc){
                             .name = "Debug Menu",
                             .description = "Enter the game's debug menu",
                             .kind = OPTKIND_SCENE,
@@ -69,22 +69,20 @@ void OnBoot()
     alloc_arr = HSD_MemAlloc(sizeof(u8) * 200); // persistently allocate an array of size 200
 }
 
-// Runs on startup after the save data is loaded into memory.
-// If your mod uses save data it is required you save a pointer to it so it can be interfaced with it later.
-void OnSaveInit(TemplateSave *save, int is_req_init)
+// Runs on boot when hoshi creates save data for the mod.
+// Initialize default save file values here.
+void OnSaveInit()
 {
-    if (is_req_init)
-    {
-        // save file for your mod was just allocated by hoshi, should initialize it
-        OSReport("save data for " MOD_NAME " created!\n");
-        save->boot_num = 0;
-    }
-    else
-        save->boot_num++;
+    OSReport("save data for " MOD_NAME " created!\n");
+    ModSave->boot_num = 0;
+}
 
-    OSReport(MOD_NAME " present for [%d] boot cycles\n", save->boot_num);
-
-    template_save_ptr = save;
+// Runs on startup after any save data is loaded into memory.
+// This callback is executed regardless of if a memory card is inserted or contained existing save data.
+void OnSaveLoaded()
+{
+    ModSave->boot_num++;
+    OSReport(MOD_NAME " present for [%d] boot cycles\n", ModSave->boot_num);
 }
 
 // Runs when entering the main menu.
@@ -168,6 +166,18 @@ void OnSceneChange()
     // Init some data
     PerFrameFuncData *gp = g->userdata;
     gp->timer = 0;
+}
+
+// Runs every game tick, even when the game is paused normally or via debug mode.
+void OnFrame()
+{
+    GameData *gd = Gm_GetGameData();
+
+    if (gd->update.pause_kind & (1 << PAUSEKIND_SYS) && !(gd->update.pause_kind_prev & (1 << PAUSEKIND_SYS)))
+        OSReport("Game is paused via debug mode!\n");
+
+    if (gd->update.pause_kind & (1 << PAUSEKIND_GAME) && !(gd->update.pause_kind_prev & (1 << PAUSEKIND_GAME)))
+        OSReport("Game is paused via in-game!\n");
 }
 
 ////////////////////////////

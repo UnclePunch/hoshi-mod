@@ -11,7 +11,7 @@ BUILD_DIR 		= build
 HOSHI_DIR		= externals/hoshi
 LIB_ROOT_DIR 	= $(HOSHI_DIR)/Lib
 INC_DIR 		?= $(HOSHI_DIR)/include
-TOOL_DIR 		?= $(HOSHI_DIR)/packtool
+PACKTOOL_DIR 	?= $(HOSHI_DIR)/packtool
 OUT_DIR 		= out
 MODS_OUT_DIR 	= $(OUT_DIR)/mods
 MODS_ROOT_DIR 	= examples
@@ -22,7 +22,7 @@ CFLAGS = -O1 -mcpu=750 -meabi -msdata=none -mhard-float -ffreestanding \
            -fno-merge-constants -ffunction-sections -fdata-sections \
            -MMD # needed for automatic dependency generation
 
-LDFLAGS  ?= -r -T$(TOOL_DIR)/link.ld
+LDFLAGS  ?= -r -T$(PACKTOOL_DIR)/link.ld
 
 # --- Derived Variables ---
 # INCLUDES: Transforms include paths into compiler -I flags
@@ -152,7 +152,7 @@ $(MODS_OUT_DIR)/$(1).bin: $(BUILD_DIR)/$(1).modlink | $(MODS_OUT_DIR)
 	@echo ""
 	@echo "--- Creating '$(1)' bin file ---"
 	@echo ""
-	python $(TOOL_DIR)/main.py $$< -m gbFunction -o $$@
+	python $(PACKTOOL_DIR)/main.py $$< -m gbFunction -o $$@
 
 endef
 
