@@ -47,10 +47,10 @@ OptionDesc ModSettings = {
                     .option_num = 1,
                     .options = {
                         &(OptionDesc){
-                            .name = "Debug Menu",
-                            .description = "Enter the game's debug menu",
+                            .name = "Title Screen",
+                            .description = "Enter the main title screen.",
                             .kind = OPTKIND_SCENE,
-                            .major_idx = MJRKIND_DEBUG,
+                            .major_idx = MJRKIND_TITLE,
                         },
                     },
                 },
