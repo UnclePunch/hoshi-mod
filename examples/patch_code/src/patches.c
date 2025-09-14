@@ -25,5 +25,6 @@ void Patches_Apply()
 {
     CODEPATCH_HOOKAPPLY(0x800ee0a0); // Applies the hook for the memory address 0x800ee0a0 defined above using CODEPATCH_HOOKCREATE
 
-    CODEPATCH_REPLACEINSTRUCTION(0x8000d34c, 0x38800000 | VCKIND_DRAGOON); // modify the instruction at 0x8000d34c to "li r4, VCKND_DRAGOON"
+    CODEPATCH_REPLACEINSTRUCTION(0x8000d34c, 0x38800000 | 0);              // modify the instruction at 0x8000d34c to "li r4, 0"
+    CODEPATCH_REPLACEINSTRUCTION(0x8000d358, 0x38800000 | VCKIND_DRAGOON); // modify the instruction at 0x8000d358 to "li r4, VCKND_DRAGOON"
 }
