@@ -5,20 +5,14 @@
 #include "inline.h"
 
 #include "header.h"
+#include "hoshi/mod.h"
 #include "hoshi/settings.h"
 
 #define MOD_NAME "Basic Example"
 
 u8 *alloc_arr;                    // pointer to an array allocated at runtime in OnBoot.
 int is_play_sfx_every_second = 0; // variable that is updated by the player in the in-game settings menu via the ModMenu defined below.
-
-char ModName[] = MOD_NAME;      // Name of the mod.
-char ModAuthor[] = "Your Name"; // Creator of the mod.
-char ModVersion[] = "v1.0";     // Version of the mod.
-
-int ModSaveSize = sizeof(struct TemplateSave); // (optional) Size of the save data your mod uses. A pointer to the saved data is passed into OnSaveInit.
-TemplateSave *ModSave;                         // Pointer to the mod's save data. Updated by hoshi at runtime.
-
+                      
 // Creates a menu that appears in the in-game Settings menu.
 // Menus may be nested by setting the OptionDesc::kind to OPTKIND_MENU
 OptionDesc ModSettings = {
@@ -59,6 +53,25 @@ OptionDesc ModSettings = {
     },
 };
 
+ModDesc mod_desc = {
+    .name = "City Settings",                    // Name of the mod.
+    .author = "UnclePunch",                     // Creator of the mod.
+    .version.major = 1,                         // Version of the mod.
+    .version.minor = 0,
+    .save_size = sizeof(struct TemplateSave),   // (optional) Size of the save data your mod uses. A pointer to the saved data is passed into OnSaveInit.
+    .save_ptr = 0,                              // Pointer to the mod's save data. Updated by hoshi at runtime.
+    .OnBoot = OnBoot,
+    .OnSaveInit = OnSaveInit,
+    .OnSaveLoaded = OnSaveLoaded,
+    .OnMainMenuLoad = OnMainMenuLoad,
+    .OnPlayerSelectLoad = OnPlayerSelectLoad,
+    .On3DLoad = On3DLoad,
+    .On3DPause = On3DPause,
+    .On3DUnpause = On3DUnpause,
+    .On3DExit = On3DExit,
+    .OnSceneChange = OnSceneChange,
+};
+
 // Runs immediately after the mod file is loaded.
 // Calls to HSD_MemAlloc in THIS function specifically wil persist throughout the entire runtime of the game.
 // All calls to HSD_MemAlloc from elsewhere will return an allocation that exists only within the current scene.
@@ -73,16 +86,20 @@ void OnBoot()
 // Initialize default save file values here.
 void OnSaveInit()
 {
+    TemplateSave *save = (TemplateSave *)mod_desc.save_ptr;
+
     OSReport("save data for " MOD_NAME " created!\n");
-    ModSave->boot_num = 0;
+    save->boot_num = 0;
 }
 
 // Runs on startup after any save data is loaded into memory.
 // This callback is executed regardless of if a memory card is inserted or contained existing save data.
 void OnSaveLoaded()
 {
-    ModSave->boot_num++;
-    OSReport(MOD_NAME " present for [%d] boot cycles\n", ModSave->boot_num);
+    TemplateSave *save = (TemplateSave *)mod_desc.save_ptr;
+
+    save->boot_num++;
+    OSReport(MOD_NAME " present for [%d] boot cycles\n", save->boot_num);
 }
 
 // Runs when entering the main menu.
@@ -136,7 +153,7 @@ void On3DPause(int pause_ply)
 }
 
 // Runs when unpausing the match.
-void On3DUnpause()
+void On3DUnpause(int pause_ply)
 {
     OSReport("Resuming the game.\n");
 }
@@ -160,7 +177,7 @@ void OnSceneChange()
     GOBJ *g = GOBJ_EZCreator(0, 0, 0,                            // p_link 0 runs during 3d pause
                              sizeof(PerFrameFuncData), HSD_Free, // initialize gobj's data
                              HSD_OBJKIND_NONE, 0,                // gobj does not contain an hsd object
-                             Func_PerFrame, 0,                   // per frame process
+                             GOBJ_PerFrame, 0,                   // per frame process
                              0, 0, 0);                           // not being rendered
 
     // Init some data
@@ -184,7 +201,7 @@ void OnFrame()
 // User Defined Functions //
 ////////////////////////////
 
-void Func_PerFrame(GOBJ *g)
+void GOBJ_PerFrame(GOBJ *g)
 {
     // Users can modify this value in the in-game settings menu
     if (is_play_sfx_every_second == 0)

@@ -8,4 +8,16 @@ typedef struct PerFrameFuncData
     int timer;
 } PerFrameFuncData;
 
-void Func_PerFrame(GOBJ *g);
+void OnBoot();
+void OnSaveInit();
+void OnSaveLoaded();
+void OnMainMenuLoad();
+void OnPlayerSelectLoad();
+void On3DLoad();
+void On3DPause(int pause_ply);
+void On3DUnpause(int pause_ply);
+void On3DExit();
+void OnSceneChange();
+void OnFrame();
+
+void GOBJ_PerFrame(GOBJ *g);
