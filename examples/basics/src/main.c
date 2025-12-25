@@ -65,7 +65,8 @@ ModDesc mod_desc = {
     .OnSaveLoaded = OnSaveLoaded,
     .OnMainMenuLoad = OnMainMenuLoad,
     .OnPlayerSelectLoad = OnPlayerSelectLoad,
-    .On3DLoad = On3DLoad,
+    .On3DLoadStart = On3DLoadStart,
+    .On3DLoadEnd = On3DLoadEnd,
     .On3DPause = On3DPause,
     .On3DUnpause = On3DUnpause,
     .On3DExit = On3DExit,
@@ -116,8 +117,15 @@ void OnPlayerSelectLoad()
 }
 
 // Runs upon entering a 3D game. Can be either Air Ride or City Trial. Must be explicity checked using Gm_IsInCity().
+// Players, riders, their machines, and the map have NOT been instantiated at the time this is executed.
+void On3DLoadStart()
+{
+
+}
+
+// Runs upon entering a 3D game. Can be either Air Ride or City Trial. Must be explicity checked using Gm_IsInCity().
 // Players, riders, their machines, and the map have all been instantiated by the time this is executed.
-void On3DLoad()
+void On3DLoadEnd()
 {
     // determine the game mode
     char *mode_name = Gm_IsInCity() ? "City Trial" : "Air Ride";
